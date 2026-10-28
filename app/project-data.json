@@ -1,0 +1,68 @@
+{
+  "lastUpdated": "2026-10-28",
+  "projects": [
+    {
+      "id": "release-radar",
+      "name": "Release Radar",
+      "owner": "Maya Chen",
+      "status": "on-track",
+      "recentActivity": "The team completed staging checks and shared release notes for review.",
+      "priority": "high",
+      "summary": "A clearer release dashboard for product and support teams.",
+      "progress": 82,
+      "dueDate": "2026-11-06"
+    },
+    {
+      "id": "welcome-wagon",
+      "name": "Welcome Wagon",
+      "owner": "Theo Brooks",
+      "status": "at-risk",
+      "recentActivity": "Usability testing found two onboarding steps that need simpler guidance.",
+      "priority": "high",
+      "summary": "Refreshes the new-user onboarding flow and setup checklist.",
+      "progress": 61,
+      "dueDate": "2026-11-14"
+    },
+    {
+      "id": "search-spark",
+      "name": "Search Spark",
+      "owner": "Priya Nair",
+      "status": "blocked",
+      "recentActivity": "The team is waiting for access to the production search index.",
+      "priority": "medium",
+      "summary": "Improves search relevance and adds friendly result suggestions.",
+      "progress": 38,
+      "dueDate": "2026-11-21"
+    },
+    {
+      "id": "support-signal",
+      "name": "Support Signal",
+      "owner": "Jordan Lee",
+      "status": "completed",
+      "recentActivity": "The new ticket trends report launched and the support team completed training.",
+      "priority": "medium",
+      "summary": "Helps support leads spot recurring customer issues earlier.",
+      "progress": 100,
+      "dueDate": "2026-10-24"
+    },
+    {
+      "id": "docs-garden",
+      "name": "Docs Garden",
+      "owner": "Elena García",
+      "status": "on-track",
+      "recentActivity": "Contributors published updated API examples and reorganized the quick-start guide.",
+      "priority": "low",
+      "summary": "Keeps developer documentation approachable, current, and easy to navigate.",
+      "progress": 73,
+      "dueDate": "2026-11-30"
+    },
+    {
+      "id": "team-hub",
+      "name": "Team Hub",
+      "owner": "Sam Okafor",
+      "status": "on-track",
+      "recentActivity": "A small pilot group started using the shared team updates page.",
+      "priority": "low"
+    }
+  ]
+}

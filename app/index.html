@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Pulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="dashboard-header">
+    <h1>Project Pulse</h1>
+    <p class="last-updated">Last updated: <time id="last-updated">—</time></p>
+  </header>
+
+  <main class="dashboard">
+    <div id="status-message" class="state-message state--loading" role="status" aria-live="polite">Loading projects…</div>
+
+    <section class="summary" aria-labelledby="summary-heading" hidden>
+      <h2 id="summary-heading" class="section-heading">Summary</h2>
+      <div class="summary-grid">
+        <div class="summary-card summary-card--total">
+          <span id="summary-total" class="summary-value">0</span>
+          <span class="summary-label">Total</span>
+        </div>
+        <div class="summary-card summary-card--on-track">
+          <span id="summary-on-track" class="summary-value">0</span>
+          <span class="summary-label">On track</span>
+        </div>
+        <div class="summary-card summary-card--at-risk">
+          <span id="summary-at-risk" class="summary-value">0</span>
+          <span class="summary-label">At risk</span>
+        </div>
+        <div class="summary-card summary-card--blocked">
+          <span id="summary-blocked" class="summary-value">0</span>
+          <span class="summary-label">Blocked</span>
+        </div>
+        <div class="summary-card summary-card--high">
+          <span id="summary-high" class="summary-value">0</span>
+          <span class="summary-label">High priority</span>
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="projects-heading">
+      <h2 id="projects-heading" class="section-heading">Projects</h2>
+      <ul id="project-list" class="project-grid"></ul>
+    </section>
+  </main>
+
+  <script>
+    const statusLabels = {
+      "on-track": "On track",
+      "at-risk": "At risk",
+      "blocked": "Blocked",
+      "completed": "Completed"
+    };
+
+    const priorityLabels = {
+      "high": "High priority",
+      "medium": "Medium priority",
+      "low": "Low priority"
+    };
+
+    const statusMessage = document.getElementById("status-message");
+    const summarySection = document.querySelector(".summary");
+    const projectList = document.getElementById("project-list");
+
+    function requiredValue(value, fieldName, projectIndex) {
+      if (value === undefined || value === null || value === "") {
+        console.warn(`Project ${projectIndex + 1} is missing required field "${fieldName}".`);
+        return "—";
+      }
+      return String(value);
+    }
+
+    function appendTextElement(parent, tagName, className, text) {
+      const element = document.createElement(tagName);
+      element.className = className;
+      element.textContent = text;
+      parent.appendChild(element);
+      return element;
+    }
+
+    function renderProject(project, projectIndex) {
+      const name = requiredValue(project.name, "name", projectIndex);
+      const owner = requiredValue(project.owner, "owner", projectIndex);
+      const status = requiredValue(project.status, "status", projectIndex);
+      const recentActivity = requiredValue(project.recentActivity, "recentActivity", projectIndex);
+      const priority = requiredValue(project.priority, "priority", projectIndex);
+      const knownStatus = Object.hasOwn(statusLabels, status) ? status : "unknown";
+      const knownPriority = Object.hasOwn(priorityLabels, priority) ? priority : "unknown";
+
+      const listItem = document.createElement("li");
+      const article = document.createElement("article");
+      article.className = "project-card";
+      if (knownPriority === "high") {
+        article.classList.add("project-card--high-priority");
+      }
+
+      const cardHeader = document.createElement("div");
+      cardHeader.className = "project-card-header";
+      appendTextElement(cardHeader, "h3", "project-name", name);
+
+      const badges = document.createElement("div");
+      badges.className = "project-badges";
+      appendTextElement(
+        badges,
+        "span",
+        `status-badge status--${knownStatus}`,
+        statusLabels[knownStatus] || "Unknown"
+      );
+      appendTextElement(
+        badges,
+        "span",
+        `priority-badge priority--${knownPriority}`,
+        priorityLabels[knownPriority] || "Unknown"
+      );
+      cardHeader.appendChild(badges);
+      article.appendChild(cardHeader);
+
+      appendTextElement(article, "p", "project-owner", `Owner: ${owner}`);
+
+      const activity = document.createElement("div");
+      activity.className = "project-activity";
+      appendTextElement(activity, "span", "field-label", "Recent activity");
+      appendTextElement(activity, "span", "", recentActivity);
+      article.appendChild(activity);
+
+      if (project.summary !== undefined && project.summary !== null && project.summary !== "") {
+        appendTextElement(article, "p", "project-summary", String(project.summary));
+      }
+
+      if (project.progress !== undefined && project.progress !== null) {
+        const progressValue = Number(project.progress);
+        if (Number.isFinite(progressValue)) {
+          const normalizedProgress = Math.min(100, Math.max(0, progressValue));
+          const progressId = `project-progress-${projectIndex}`;
+          const progressContainer = document.createElement("div");
+          progressContainer.className = "progress";
+
+          const progressLabel = document.createElement("label");
+          progressLabel.htmlFor = progressId;
+          appendTextElement(progressLabel, "span", "", "Progress");
+          appendTextElement(progressLabel, "span", "", `${normalizedProgress}%`);
+
+          const progress = document.createElement("progress");
+          progress.id = progressId;
+          progress.max = 100;
+          progress.value = normalizedProgress;
+          progress.textContent = `${normalizedProgress}%`;
+
+          progressContainer.append(progressLabel, progress);
+          article.appendChild(progressContainer);
+        }
+      }
+
+      if (project.dueDate !== undefined && project.dueDate !== null && project.dueDate !== "") {
+        const due = document.createElement("p");
+        due.className = "project-due";
+        const time = document.createElement("time");
+        time.dateTime = String(project.dueDate);
+        time.textContent = String(project.dueDate);
+        due.append("Due ", time);
+        article.appendChild(due);
+      }
+
+      listItem.appendChild(article);
+      projectList.appendChild(listItem);
+    }
+
+    function updateSummary(projects) {
+      document.getElementById("summary-total").textContent = String(projects.length);
+      document.getElementById("summary-on-track").textContent =
+        String(projects.filter((project) => project.status === "on-track").length);
+      document.getElementById("summary-at-risk").textContent =
+        String(projects.filter((project) => project.status === "at-risk").length);
+      document.getElementById("summary-blocked").textContent =
+        String(projects.filter((project) => project.status === "blocked").length);
+      document.getElementById("summary-high").textContent =
+        String(projects.filter((project) => project.priority === "high").length);
+    }
+
+    function updateLastUpdated(lastUpdated) {
+      const time = document.getElementById("last-updated");
+      if (lastUpdated === undefined || lastUpdated === null || lastUpdated === "") {
+        time.removeAttribute("datetime");
+        time.textContent = "—";
+        return;
+      }
+      time.dateTime = String(lastUpdated);
+      time.textContent = String(lastUpdated);
+    }
+
+    function showState(modifier, message) {
+      statusMessage.hidden = false;
+      statusMessage.className = `state-message state--${modifier}`;
+      statusMessage.textContent = message;
+      summarySection.hidden = true;
+    }
+
+    async function loadProjects() {
+      try {
+        const response = await fetch("project-data.json");
+        if (!response.ok) {
+          throw new Error(`Project data request failed with status ${response.status}.`);
+        }
+
+        let data;
+        try {
+          data = await response.json();
+        } catch (error) {
+          throw new Error("Project data contains invalid JSON.", { cause: error });
+        }
+
+        if (!data || !Array.isArray(data.projects)) {
+          throw new Error("Project data must contain a projects array.");
+        }
+
+        updateLastUpdated(data.lastUpdated);
+        if (data.projects.length === 0) {
+          showState("empty", "No projects to show yet.");
+          return;
+        }
+
+        data.projects.forEach(renderProject);
+        updateSummary(data.projects);
+        summarySection.hidden = false;
+        statusMessage.hidden = true;
+      } catch (error) {
+        console.error(error);
+        let message = "Unable to load projects.";
+        if (location.protocol === "file:") {
+          message += " Run \"Run Project Pulse Dashboard\" from VS Code's Run and Debug view.";
+        }
+        showState("error", message);
+      }
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>
